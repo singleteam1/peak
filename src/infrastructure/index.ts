@@ -4,6 +4,5 @@ export * from './explorer';
 export * from './interactive';
 export * from './powershell';
 export * from './powershell-modifier';
-export * from './replacer';
-export * from './storage';
+export * from "./replacer";
 export * from './unzipper';

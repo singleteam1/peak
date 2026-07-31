@@ -1,20 +1,56 @@
 import type { ICommand } from 'core/types';
+import { type IInteractiveService, Interactive } from "infrastructure";
+import {
+  applicationCacheName,
+  DiskCache,
+  type ICache,
+} from "infrastructure/cache";
 
 export const loader_handlers: ICommand[] = [
-	{
-		command: 'reset',
-		description: 'Reset entire config.',
-		load: async () => {
-			const module = await import('./handlers/reset.handler');
-			return new module.ResetHandler();
-		},
-	},
-	{
-		command: 'plugin',
-		description: 'Custom plugin to connect to the CLI',
-		load: async () => {
-			const module = await import('./handlers/plugin.handler');
-			return new module.PluginHandler();
-		},
-	},
+  {
+    command: "reset",
+    description: "Reset entire config.",
+    load: async () => {
+      const module = await import("./handlers/reset.handler");
+      const cacheManager: ICache = new DiskCache(applicationCacheName);
+      const interactive: IInteractiveService = new Interactive();
+      return new module.ResetHandler(cacheManager, interactive);
+    },
+  },
+  {
+    command: "plugin",
+    description: "Custom plugin to connect to the CLI",
+    arguments: [
+      {
+        argument: "[key]",
+        description: "Key name of the command",
+      },
+      {
+        argument: "[url]",
+        description: "Exact url for getting pulled the project",
+      },
+    ],
+    load: async () => {
+      const module = await import("./handlers/plugin.handler");
+      const cacheManager: ICache = new DiskCache(applicationCacheName);
+      const interactive: IInteractiveService = new Interactive();
+      return new module.PluginHandler(cacheManager, interactive);
+    },
+  },
+  {
+    command: "remove-plugin",
+    description: "Remove custom plugin",
+    arguments: [
+      {
+        argument: "[key]",
+        description: "Key name of the command",
+      },
+    ],
+    load: async () => {
+      const module = await import("./handlers/remove-plugin.handler");
+      const cacheManager: ICache = new DiskCache(applicationCacheName);
+      const interactive: IInteractiveService = new Interactive();
+      return new module.RemovePluginHandler(cacheManager, interactive);
+    },
+  },
 ] as const;

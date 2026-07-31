@@ -4,65 +4,57 @@ import path from 'path';
 import type { ICache } from './cache.types';
 
 interface CacheEntry<T> {
-	value: T;
-	expiresAt: number | null;
+  value: T;
 }
 
 export class DiskCache implements ICache {
-	private readonly cacheDir: string;
+  private readonly cacheDir: string;
 
-	public constructor(appName: string) {
-		this.cacheDir = envPaths(appName).cache;
-	}
+  public constructor(appName: string) {
+    this.cacheDir = envPaths(appName).cache;
+  }
 
-	private getFilePath(key: string): string {
-		const safeKey = key.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-		return path.join(this.cacheDir, `${safeKey}.json`);
-	}
+  private getFilePath(key: string): string {
+    const safeKey = key.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    return path.join(this.cacheDir, `${safeKey}.json`);
+  }
 
-	public async get<T>(key: string): Promise<T | null> {
-		const filePath = this.getFilePath(key);
+  public async get<T>(key: string): Promise<T | null> {
+    const filePath = this.getFilePath(key);
 
-		if (!(await fs.pathExists(filePath))) return null;
+    if (!(await fs.pathExists(filePath))) return null;
 
-		try {
-			const entry: CacheEntry<T> = await fs.readJson(filePath);
+    try {
+      const entry: CacheEntry<T> = await fs.readJson(filePath);
+      return entry.value;
+    } catch (error) {
+      return null;
+    }
+  }
 
-			if (entry.expiresAt && Date.now() > entry.expiresAt) {
-				await this.delete(key);
-				return null;
-			}
+  public async set<T>(key: string, value: T): Promise<void> {
+    await fs.ensureDir(this.cacheDir);
 
-			return entry.value;
-		} catch (error) {
-			return null;
-		}
-	}
+    const entry: CacheEntry<T> = {
+      value,
+    };
+    await fs.writeJson(this.getFilePath(key), entry);
+  }
 
-	public async set<T>(key: string, value: T, ttlMs?: number): Promise<void> {
-		await fs.ensureDir(this.cacheDir);
+  public async has(key: string): Promise<boolean> {
+    const val = await this.get(key);
+    return val !== null;
+  }
 
-		const entry: CacheEntry<T> = {
-			value,
-			expiresAt: ttlMs ? Date.now() + ttlMs : null,
-		};
-		await fs.writeJson(this.getFilePath(key), entry);
-	}
+  public async delete(key: string): Promise<void> {
+    await fs.remove(this.getFilePath(key));
+  }
 
-	public async has(key: string): Promise<boolean> {
-		const val = await this.get(key);
-		return val !== null;
-	}
+  public async clear(): Promise<void> {
+    await fs.emptyDir(this.cacheDir);
+  }
 
-	public async delete(key: string): Promise<void> {
-		await fs.remove(this.getFilePath(key));
-	}
-
-	public async clear(): Promise<void> {
-		await fs.emptyDir(this.cacheDir);
-	}
-
-	public get cacheDirectory(): string {
-		return this.cacheDir;
-	}
+  public get cacheDirectory(): string {
+    return this.cacheDir;
+  }
 }
