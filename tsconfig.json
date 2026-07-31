@@ -23,6 +23,7 @@
 		"noUncheckedSideEffectImports": true,
 		"moduleDetection": "force",
 		"baseUrl": "./src/",
+		"ignoreDeprecations": "6.0",
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true
 	},
