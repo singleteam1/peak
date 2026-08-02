@@ -1,7 +1,7 @@
 import { spinner } from '@clack/prompts';
 import { accent, lime, Website, warn } from 'common';
 import { LogOutput } from 'common/utils';
-import { ResetHandler } from 'modules/loader/handlers/reset.handler'
+import { ResetHandler } from 'modules/loader/handlers/reset.handler';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // 1. Setup Mocks

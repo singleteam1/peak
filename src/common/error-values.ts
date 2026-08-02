@@ -1,1 +1,1 @@
-export const fail = "Fail";
+export const fail = 'Fail';

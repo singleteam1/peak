@@ -32,7 +32,7 @@ describe('DiskCache', () => {
 			createFile: vi.fn(),
 			readFile: vi.fn(),
 			rename: vi.fn(),
-			moveFile: vi.fn()
+			moveFile: vi.fn(),
 		};
 
 		cache = new DiskCache(appName);
@@ -51,8 +51,8 @@ describe('DiskCache', () => {
 
 		expect(fs.ensureDir).toHaveBeenCalledWith(mockCacheDir);
 		expect(fs.writeJson).toHaveBeenCalledWith(expectedPath, {
-      value: data,
-    });
+			value: data,
+		});
 	});
 
 	it('Should return null if the file does not exist', async () => {

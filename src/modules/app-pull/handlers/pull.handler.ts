@@ -59,23 +59,26 @@ export class PullHandler implements ICommandHandler {
 			`Remove-Item ".git", ".gitignore" -Recurse -Force`,
 			join(env.calledDir, validKey),
 		);
-    loader.stop('Success!');
+		loader.stop('Success!');
 		const { metadata } = findProject;
-    let projectName = null;
-    if (metadata.isChangeName) {
-      projectName = await this.handleName(env, validKey); 
-    }
-    const projectPatch = join(env.calledDir, projectName || validKey);
-		if (metadata.framework === Framework.Node && metadata.isInstallDeps) {  
-      await this.handleNvm(projectPatch, loader)
+		let projectName = null;
+		if (metadata.isChangeName) {
+			projectName = await this.handleName(env, validKey);
+		}
+		const projectPatch = join(env.calledDir, projectName || validKey);
+		if (metadata.framework === Framework.Node && metadata.isInstallDeps) {
+			await this.handleNvm(projectPatch, loader);
 		}
 
-    if (metadata.isInitGit) {
-      const isInitGit = await this.interactive.confirmAction("Would you like to install Git?", true);
-      if (isInitGit) {
-        await this.handleGit(projectPatch)
-      }
-    }
+		if (metadata.isInitGit) {
+			const isInitGit = await this.interactive.confirmAction(
+				'Would you like to install Git?',
+				true,
+			);
+			if (isInitGit) {
+				await this.handleGit(projectPatch);
+			}
+		}
 		this.renderSuccessfullMessage(validKey);
 	}
 
@@ -87,20 +90,26 @@ export class PullHandler implements ICommandHandler {
 		return validKey;
 	}
 
-  public async handleName(env: ICommandEnvironments, validKey: string) : Promise<string> {
-    const newName = await this.interactive.prompt('Enter the name');
-    const dto = plainToInstance(AppNameDto, {name: newName} as AppNameDto);
-    const errors = await validate(dto);
-    if (errors.length > 0) {
-      this.renderValidationErrors(errors);
-      return null;
-    }
-    await this.ps.execute(`Rename-Item "${join(env.calledDir, validKey)}" "${join(env.calledDir, newName)}"`, env.calledDir)
-    return dto.name;
-  }
+	public async handleName(
+		env: ICommandEnvironments,
+		validKey: string,
+	): Promise<string> {
+		const newName = await this.interactive.prompt('Enter the name');
+		const dto = plainToInstance(AppNameDto, { name: newName } as AppNameDto);
+		const errors = await validate(dto);
+		if (errors.length > 0) {
+			this.renderValidationErrors(errors);
+			return null;
+		}
+		await this.ps.execute(
+			`Rename-Item "${join(env.calledDir, validKey)}" "${join(env.calledDir, newName)}"`,
+			env.calledDir,
+		);
+		return dto.name;
+	}
 
-  public async handleNvm(projectPath: string, loader: any): Promise<void> {
-    const nvm = await this.interactive.singleSelect({
+	public async handleNvm(projectPath: string, loader: any): Promise<void> {
+		const nvm = await this.interactive.singleSelect({
 			message: 'Which package manager would like to use?',
 			options: lockfileList.map((f) => {
 				return {
@@ -109,14 +118,14 @@ export class PullHandler implements ICommandHandler {
 				};
 			}),
 		});
-    loader.start('Installing dependencies');
-    await this.ps.execute(`${nvm} install`, projectPath)
-    loader.stop("Dependencies installed");
-  }
+		loader.start('Installing dependencies');
+		await this.ps.execute(`${nvm} install`, projectPath);
+		loader.stop('Dependencies installed');
+	}
 
-  public async handleGit(projectPath: string) : Promise<void> {
-    await this.ps.execute('git init', projectPath);
-  }
+	public async handleGit(projectPath: string): Promise<void> {
+		await this.ps.execute('git init', projectPath);
+	}
 
 	public renderSuccessfullMessage(projectName: string) {
 		const headerMessage =
