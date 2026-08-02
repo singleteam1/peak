@@ -1,51 +1,60 @@
 import { spinner } from "@clack/prompts";
-import { Website } from "common";
+import { plainToInstance } from "class-transformer";
+import { type ValidationError, validate } from "class-validator";
+import { fail, Website } from "common";
 import { accent, lime, warn } from "common/constants";
-import { isNullOrWhiteSpace } from "common/utils";
+import { LogOutput } from "common/utils";
 import type { ICommandEnvironments, ICommandHandler } from "core/types";
-import { configKey, type IConfig, type IProjectData } from "data/config";
-import type { ICache } from "infrastructure/cache";
-import type { IInteractiveService } from "infrastructure/interactive";
+import type { IConfig } from "data/config";
+import type { IConfigService } from "infrastructure/configService/config.service";
+import { LoaderRemovePluginDto } from "../dto/loader-key-arg.dto";
 
 export class RemovePluginHandler implements ICommandHandler {
-  public constructor(
-    private readonly cache: ICache,
-    private readonly interactive: IInteractiveService,
-  ) {}
+  public constructor(private readonly configService: IConfigService) {}
 
   public async handle(args: any[], env: ICommandEnvironments): Promise<void> {
     const [key] = args;
+    const loader = spinner();
+    loader.start("Removing plugin from config");
 
-    const validKey = await this.validateKeyArg(key);
-    if (!validKey) {
+    const dto = plainToInstance(LoaderRemovePluginDto, {
+      key,
+    } as LoaderRemovePluginDto);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      loader.stop(fail);
+      this.renderValidationErrors(errors);
       return;
     }
+    const { key: validKey } = dto;
 
-    const loader = spinner();
-    loader.start("Removing project from config");
-    const config = await this.cache.get<string>(configKey);
-    const parsedConfig = JSON.parse(config) as Array<IProjectData>;
-    const filteredConfig = parsedConfig?.filter(f => f.key !== validKey);
-    if (filteredConfig) {
-      await this.cache.set(configKey, JSON.stringify(filteredConfig));
+    const config = await this.configService.getConfig();
+    const filteredProject = config.projects?.filter((f) => f.key !== validKey);
+    if (filteredProject) {
+      const newConfig: IConfig = {
+        projects: filteredProject,
+      };
+      await this.configService.setConfig(newConfig);
     }
     loader.stop("Success!");
-    this.renderSuccessfullMessage();
+    this.renderSuccessfullMessage(validKey);
   }
 
-  private async validateKeyArg(key: string): Promise<string | null> {
-    let validKey = key;
-    if (isNullOrWhiteSpace(validKey)) {
-      validKey = await this.interactive.prompt("Enter the key");
-    }
-    return validKey;
-  }
-
-  private renderSuccessfullMessage() {
+  public renderSuccessfullMessage(projectName: string) {
     const headerMessage =
-      warn.bold(`\nConfig was successfully updated.`) +
-      `\n\nAdd custom plugins ${lime("peak plugin")}\n\n` +
-      `Discover ${accent.bold(Website)} to check the documentation\n`;
+      warn.bold(`Plugin ${projectName} was successfully removed!`) +
+      `\n\nAdd custom plugins ${lime("peak plugin")} or` +
+      `\nReset all config entirely ${lime("peak reset")}` +
+      `\n\nDiscover ${accent.bold(Website)} to check the documentation\n`;
     console.log(headerMessage);
+  }
+
+  public renderValidationErrors(errors: ValidationError[]): void {
+    for (const error of errors) {
+      if (error.constraints) {
+        const messages = Object.values(error.constraints).join(", ");
+        LogOutput.LogValidationError(messages);
+      }
+    }
   }
 }

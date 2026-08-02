@@ -29,7 +29,7 @@ export class ResetHandler implements ICommandHandler {
     this.renderSuccessfullMessage();
   }
 
-  private renderSuccessfullMessage() {
+  public renderSuccessfullMessage() {
     const headerMessage =
       warn.bold(`\nConfig was successfully reset.`) +
       `\n\nAdd custom plugins ${lime("peak plugin")}\n\n` +

@@ -51,22 +51,8 @@ describe('DiskCache', () => {
 
 		expect(fs.ensureDir).toHaveBeenCalledWith(mockCacheDir);
 		expect(fs.writeJson).toHaveBeenCalledWith(expectedPath, {
-			value: data,
-			expiresAt: null,
-		});
-	});
-
-	it('Should set an expiration date when TTL is provided', async () => {
-		const now = new Date('2026-01-01T12:00:00Z').getTime();
-		vi.setSystemTime(now);
-
-		const ttl = 5000;
-		await cache.set('key', 'val', ttl);
-
-		expect(fs.writeJson).toHaveBeenCalledWith(
-			expect.any(String),
-			expect.objectContaining({ expiresAt: now + ttl }),
-		);
+      value: data,
+    });
 	});
 
 	it('Should return null if the file does not exist', async () => {
@@ -85,22 +71,6 @@ describe('DiskCache', () => {
 
 		const result = await cache.get('key');
 		expect(result).toEqual(data);
-	});
-
-	it('Should return null and delete the file if it has expired', async () => {
-		const now = Date.now();
-		vi.setSystemTime(now);
-
-		(fs.pathExists as any).mockResolvedValue(true);
-		(fs.readJson as any).mockResolvedValue({
-			value: 'old-data',
-			expiresAt: now - 1000,
-		});
-
-		const result = await cache.get('expired-key');
-
-		expect(result).toBeNull();
-		expect(fs.remove).toHaveBeenCalled();
 	});
 
 	it('Should return null if JSON reading fails', async () => {

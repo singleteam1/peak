@@ -1,71 +1,101 @@
 import { spinner } from "@clack/prompts";
-import { Website } from "common";
-import { accent, lime, warn } from "common/constants";
-import { isNullOrWhiteSpace, LogOutput } from "common/utils";
+import { plainToInstance } from "class-transformer";
+import { type ValidationError, validate } from "class-validator";
+import { fail, Website } from "common";
+import { accent, warn } from "common/constants";
+import { LogOutput } from "common/utils";
 import type { ICommandEnvironments, ICommandHandler } from "core/types";
-import { configKey, type IConfig, type IProjectData } from "data/config";
-import type { ICache } from "infrastructure/cache";
-import type { IInteractiveService } from "infrastructure/interactive";
+import type { IConfig } from "data/config";
+import type { IInteractiveService } from "infrastructure";
+import type { IConfigService } from "infrastructure/configService/config.service";
+import { LoaderPluginArgDto } from "../dto/loader-key-arg.dto";
 
 export class PluginHandler implements ICommandHandler {
   public constructor(
-    private readonly cache: ICache,
+    private readonly configService: IConfigService,
     private readonly interactive: IInteractiveService,
   ) {}
 
   public async handle(args: any[], env: ICommandEnvironments): Promise<void> {
-    const [key, url] = args;
+    let [key, url] = args;
+    console.log(key);
+    if (!key) {
+      key = await this.interactive.prompt("Enter the plugin name");
+    }
+    if (!url) {
+      url = await this.interactive.prompt("Enter the repo url");
+    }
 
-    const validKey = await this.validateKeyArg(key);
-    const validUrl = await this.validateUrlArg(url);
-    if (!validKey || !validUrl) {
+    const loader = spinner();
+    loader.start("Validating");
+
+    const dto = plainToInstance(LoaderPluginArgDto, {
+      key,
+      url,
+    } as LoaderPluginArgDto);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      loader.stop(fail);
+      this.renderValidationErrors(errors);
       return;
     }
-    const loader = spinner();
-    loader.start("Updating config");
-    const config = await this.cache.get<string>(configKey);
-    const parsedConfig = JSON.parse(config) as Array<IProjectData>;
-    const newConfig = [
-      ...parsedConfig,
-      {
-        key: validKey,
-        url: validUrl,
-      },
-    ];
-    await this.cache.set(configKey, JSON.stringify(newConfig));
+    const { key: validKey, url: validUrl } = dto;
+
+    const isUrlReferencedToGit = this.validateUrlToGit(validUrl);
+    if (!isUrlReferencedToGit) {
+      loader.stop(fail);
+      LogOutput.LogValidationError("Url is not referenced to git.");
+      return;
+    }
+
+    loader.message("Updating config");
+    const config = await this.configService.getConfig();
+    const dublicate = config.projects.find(
+      (f) => f.key.toLocaleLowerCase() === validKey.toLocaleLowerCase(),
+    );
+    if (dublicate) {
+      loader.stop(fail);
+      LogOutput.LogError("Plugin with this key already exist");
+      return;
+    }
+    const newConfig: IConfig = {
+      projects: [
+        ...config.projects,
+        {
+          key: validKey,
+          url: validUrl,
+        },
+      ],
+    };
+    await this.configService.setConfig(newConfig);
     loader.stop("Success!");
     this.renderSuccessfullMessage();
   }
 
-  private async validateKeyArg(key: string): Promise<string | null> {
-    let validKey = key;
-    if (isNullOrWhiteSpace(validKey)) {
-      validKey = await this.interactive.prompt("Enter the key");
-    }
-    return validKey;
-  }
-
-  private async validateUrlArg(url: string): Promise<string | null> {
-    let validUrl = url;
-    if (isNullOrWhiteSpace(validUrl)) {
-      validUrl = await this.interactive.prompt("Enter the url");
-    }
-
+  public validateUrlToGit(url: string): boolean {
     if (
-      !validUrl.startsWith("https://github.com") &&
-      !validUrl.startsWith("https://gitlab.com")
+      !url.startsWith("https://github.com") &&
+      !url.startsWith("https://gitlab.com")
     ) {
-      LogOutput.LogError("Url is not referenced to git.");
-      return null;
+      return false;
     }
-    return validUrl;
+    return true;
   }
 
-  private renderSuccessfullMessage() {
+  public renderSuccessfullMessage() {
     const headerMessage =
       warn.bold(`\nConfig was successfully reset.`) +
       `\n\n` +
       `Discover ${accent.bold(Website)} to check the documentation\n`;
     console.log(headerMessage);
+  }
+
+  public renderValidationErrors(errors: ValidationError[]): void {
+    for (const error of errors) {
+      if (error.constraints) {
+        const messages = Object.values(error.constraints).join(", ");
+        LogOutput.LogValidationError(messages);
+      }
+    }
   }
 }

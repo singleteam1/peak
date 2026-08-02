@@ -5,6 +5,10 @@ import {
   DiskCache,
   type ICache,
 } from "infrastructure/cache";
+import {
+  ConfigService,
+  type IConfigService,
+} from "infrastructure/configService/config.service";
 
 export const loader_handlers: ICommand[] = [
   {
@@ -18,7 +22,7 @@ export const loader_handlers: ICommand[] = [
     },
   },
   {
-    command: "plugin",
+    command: "add-plugin",
     description: "Custom plugin to connect to the CLI",
     arguments: [
       {
@@ -34,7 +38,8 @@ export const loader_handlers: ICommand[] = [
       const module = await import("./handlers/plugin.handler");
       const cacheManager: ICache = new DiskCache(applicationCacheName);
       const interactive: IInteractiveService = new Interactive();
-      return new module.PluginHandler(cacheManager, interactive);
+      const configService: IConfigService = new ConfigService(cacheManager);
+      return new module.PluginHandler(configService, interactive);
     },
   },
   {
@@ -49,8 +54,8 @@ export const loader_handlers: ICommand[] = [
     load: async () => {
       const module = await import("./handlers/remove-plugin.handler");
       const cacheManager: ICache = new DiskCache(applicationCacheName);
-      const interactive: IInteractiveService = new Interactive();
-      return new module.RemovePluginHandler(cacheManager, interactive);
+      const configService: IConfigService = new ConfigService(cacheManager);
+      return new module.RemovePluginHandler(configService);
     },
   },
 ] as const;

@@ -19,13 +19,13 @@ import {
 
 class MockHandler implements ICommandHandler {
 	async handle(args: any[], env: ICommandEnvironments): Promise<void> {
-		console.log(`Running mock, args: ${args[0]}`);
-	}
+    console.log(`Running mock, args: ${args[0]}`);
+  }
 }
 class MockEnvHandler implements ICommandHandler {
 	async handle(args: any[], env: ICommandEnvironments): Promise<void> {
-		console.log(`Paths: ${env.calledDir}//${env.dist}`);
-	}
+    console.log(`Paths: ${env.calledDir}//${env.dist}`);
+  }
 }
 
 function setProcessArgs(args: string[]) {
@@ -78,15 +78,14 @@ describe('core/adapter', () => {
 	});
 
 	it('Should check version', async () => {
-		setProcessArgs(['-V']);
+    setProcessArgs(["-V"]);
 
-		// Expect inside catch is used because commander throws errors.
-		try {
-			await adapter.parseArguments();
-		} catch (error: any) {
-			expect(error.message).toBe('1.10.20');
-		}
-	});
+    try {
+      await adapter.parseArguments();
+    } catch (error: any) {
+      expect(error.message).toBe("1.10.20");
+    }
+  });
 
 	it('Should check executation of the registered definitions with arguments', async () => {
 		adapter.registerDefinitions([mockDefinition]);
