@@ -1,41 +1,17 @@
 import { note, spinner } from '@clack/prompts';
 import chalk from 'chalk';
 import { validate } from 'class-validator';
-import { fail, lockfileList, Website } from 'common';
-import { accent, lime, warn } from 'common/constants';
-import { isNullOrWhiteSpace, LogOutput } from 'common/utils';
+import { LogOutput } from 'common/utils';
 import { Framework } from 'data/config';
 import { PullHandler } from 'modules/app-pull/handlers/pull.handler';
 import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-// 1. Setup Mocks
-vi.mock('@clack/prompts', () => ({
-	spinner: vi.fn(),
-	note: vi.fn(),
-}));
 
 vi.mock('chalk', () => ({
 	default: {
 		bold: vi.fn((text) => `CHALK_BOLD[${text}]`),
 	},
 }));
-
-vi.mock('class-transformer', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('class-transformer')>();
-	return {
-		...actual,
-		plainToInstance: vi.fn((cls, obj) => obj),
-	};
-});
-
-vi.mock('class-validator', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('class-validator')>();
-	return {
-		...actual,
-		validate: vi.fn(),
-	};
-});
 
 vi.mock('common', () => ({
 	fail: 'mock-fail-symbol',

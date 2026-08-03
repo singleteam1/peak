@@ -1,31 +1,11 @@
 import { spinner } from '@clack/prompts';
-import { setupConsoleLogs } from '__tests__/setup';
+import { setupConsoleLogs } from '__tests__/setup/setup-logs';
 import { validate } from 'class-validator';
 import { fail, Website } from 'common';
 import { accent, lime, warn } from 'common/constants';
 import { LogOutput } from 'common/utils';
 import { RemovePluginHandler } from 'modules/loader/handlers/remove-plugin.handler';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-vi.mock('@clack/prompts', () => ({
-	spinner: vi.fn(),
-}));
-
-vi.mock('class-transformer', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('class-transformer')>();
-	return {
-		...actual,
-		plainToInstance: vi.fn((cls, obj) => obj),
-	};
-});
-
-vi.mock('class-validator', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('class-validator')>();
-	return {
-		...actual,
-		validate: vi.fn(),
-	};
-});
 
 vi.mock('common', () => ({
 	fail: 'mock-fail-symbol',

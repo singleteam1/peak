@@ -3,7 +3,7 @@ import { note, spinner } from '@clack/prompts';
 import chalk from 'chalk';
 import { plainToInstance } from 'class-transformer';
 import { type ValidationError, validate } from 'class-validator';
-import { fail, lockfileList, Website } from 'common';
+import { lockfileList, Website } from 'common';
 import { accent, lime, warn } from 'common/constants';
 import { isNullOrWhiteSpace, LogOutput } from 'common/utils';
 import type { ICommandEnvironments, ICommandHandler } from 'core/types';

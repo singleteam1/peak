@@ -7,27 +7,6 @@ import { Framework } from 'data/config';
 import { PluginHandler } from 'modules/loader/handlers/plugin.handler';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// 1. Setup Mocks
-vi.mock('@clack/prompts', () => ({
-	spinner: vi.fn(),
-}));
-
-vi.mock('class-transformer', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('class-transformer')>();
-	return {
-		...actual,
-		plainToInstance: vi.fn((cls, obj) => obj),
-	};
-});
-
-vi.mock('class-validator', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('class-validator')>();
-	return {
-		...actual,
-		validate: vi.fn(),
-	};
-});
-
 vi.mock('common', () => ({
 	Website: 'https://example.com',
 }));
@@ -47,10 +26,6 @@ vi.mock('common/utils', () => ({
 		LogValidationError: vi.fn(),
 		LogError: vi.fn(),
 	},
-}));
-
-vi.mock('data/config', () => ({
-	Framework: { NET: 'NET', Node: 'NodeJs' }, // Mocked Framework enum structure
 }));
 
 describe('PluginHandler', () => {

@@ -4,11 +4,6 @@ import { LogOutput } from 'common/utils';
 import { ResetHandler } from 'modules/loader/handlers/reset.handler';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// 1. Setup Mocks
-vi.mock('@clack/prompts', () => ({
-	spinner: vi.fn(),
-}));
-
 vi.mock('common', () => ({
 	Website: 'https://example.com',
 	warn: {
@@ -28,7 +23,7 @@ vi.mock('common/utils', () => ({
 
 vi.mock('data/config', () => ({
 	configKey: 'mock-config-key',
-	config: { projects: [], version: '1.0.0' }, // Mock config object structure
+	config: { projects: [], version: '1.0.0' },
 }));
 
 describe('ResetHandler', () => {

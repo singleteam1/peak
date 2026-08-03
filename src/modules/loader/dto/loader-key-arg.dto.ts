@@ -18,3 +18,10 @@ export class LoaderRemovePluginDto {
 	@IsNotEmpty({ message: 'Key is empty' })
 	key: string;
 }
+
+export class LoaderConfigNameDto {
+	@IsOptional()
+	@IsString({ message: 'Name is bad' })
+	@IsNotEmpty({ message: 'Name is empty' })
+	name: string;
+}

@@ -76,4 +76,26 @@ export const loader_handlers: ICommand[] = [
 			return new module.ExportHandlerHandler(configService, ps);
 		},
 	},
+	{
+		command: 'import-config',
+		description: 'Import config',
+		arguments: [
+			{
+				argument: '[name]',
+				description: 'Name of config file',
+			},
+		],
+		load: async () => {
+			const module = await import('./handlers/import-config.handler');
+			const cacheManager: ICache = new DiskCache(applicationCacheName);
+			const configService: IConfigService = new ConfigService(cacheManager);
+			const interactive: IInteractiveService = new Interactive();
+			const explorer: IExplorerService = new ExplorerService();
+			return new module.ImportHandlerHandler(
+				configService,
+				interactive,
+				explorer,
+			);
+		},
+	},
 ] as const;

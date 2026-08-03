@@ -14,12 +14,12 @@ import {
 	vi,
 } from 'vitest';
 
-vi.mock('@clack/prompts', () => ({
-	spinner: vi.fn(() => ({
-		start: vi.fn(),
-		stop: vi.fn(),
-	})),
-}));
+// vi.mock('@clack/prompts', () => ({
+// 	spinner: vi.fn(() => ({
+// 		start: vi.fn(),
+// 		stop: vi.fn(),
+// 	})),
+// }));
 
 vi.mock('common', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('common')>();

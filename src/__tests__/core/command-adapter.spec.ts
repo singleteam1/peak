@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: used inside tests */
 /** biome-ignore-all lint/correctness/noUnusedFunctionParameters: used inside tests */
-import { setupConsoleLogs } from '__tests__/setup';
+import { setupConsoleLogs } from '__tests__/setup/setup-logs';
 import { CommandAdapter } from 'core';
 import type {
 	ICommand,
