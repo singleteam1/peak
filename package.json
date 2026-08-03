@@ -1,5 +1,5 @@
 {
-	"name": "peakcli",
+	"name": "@singleteam/peakcli",
 	"version": "1.0.0",
 	"description": "Elevate your development workflow with a suite of powerful tools designed for generating robust, production-ready web blanks",
 	"main": "dist/index.js",
