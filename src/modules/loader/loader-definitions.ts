@@ -1,5 +1,12 @@
 import type { ICommand } from 'core/types';
-import { type IInteractiveService, Interactive } from 'infrastructure';
+import {
+	ExplorerService,
+	type IExplorerService,
+	type IInteractiveService,
+	Interactive,
+	type IPowershellService,
+	PowershellService,
+} from 'infrastructure';
 import {
 	applicationCacheName,
 	DiskCache,
@@ -56,6 +63,17 @@ export const loader_handlers: ICommand[] = [
 			const cacheManager: ICache = new DiskCache(applicationCacheName);
 			const configService: IConfigService = new ConfigService(cacheManager);
 			return new module.RemovePluginHandler(configService);
+		},
+	},
+	{
+		command: 'export-config',
+		description: 'Export config',
+		load: async () => {
+			const module = await import('./handlers/export-config.handler');
+			const cacheManager: ICache = new DiskCache(applicationCacheName);
+			const configService: IConfigService = new ConfigService(cacheManager);
+			const ps: IPowershellService = new PowershellService();
+			return new module.ExportHandlerHandler(configService, ps);
 		},
 	},
 ] as const;

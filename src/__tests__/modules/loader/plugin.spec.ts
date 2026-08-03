@@ -1,12 +1,13 @@
 import { spinner } from '@clack/prompts';
-import { setupConsoleLogs } from '__tests__/setup';
 import { validate } from 'class-validator';
-import { fail, Website } from 'common';
-import { accent, warn } from 'common/constants';
+import { Website } from 'common';
+import { accent, lime, warn } from 'common/constants';
 import { LogOutput } from 'common/utils';
+import { Framework } from 'data/config';
 import { PluginHandler } from 'modules/loader/handlers/plugin.handler';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// 1. Setup Mocks
 vi.mock('@clack/prompts', () => ({
 	spinner: vi.fn(),
 }));
@@ -28,7 +29,6 @@ vi.mock('class-validator', async (importOriginal) => {
 });
 
 vi.mock('common', () => ({
-	fail: 'mock-fail-symbol',
 	Website: 'https://example.com',
 }));
 
@@ -39,6 +39,7 @@ vi.mock('common/constants', () => ({
 	accent: {
 		bold: vi.fn((text) => `ACCENT_BOLD[${text}]`),
 	},
+	lime: vi.fn((text) => `LIME[${text}]`),
 }));
 
 vi.mock('common/utils', () => ({
@@ -46,6 +47,10 @@ vi.mock('common/utils', () => ({
 		LogValidationError: vi.fn(),
 		LogError: vi.fn(),
 	},
+}));
+
+vi.mock('data/config', () => ({
+	Framework: { NET: 'NET', Node: 'NodeJs' }, // Mocked Framework enum structure
 }));
 
 describe('PluginHandler', () => {
@@ -62,17 +67,18 @@ describe('PluginHandler', () => {
 
 		interactiveServiceMock = {
 			prompt: vi.fn(),
+			singleSelect: vi.fn(),
 		};
 
 		mockSpinner = {
 			start: vi.fn(),
 			stop: vi.fn(),
-			message: vi.fn(),
 		};
 		vi.mocked(spinner).mockReturnValue(mockSpinner);
 
 		vi.mocked(validate).mockResolvedValue([]);
-		setupConsoleLogs();
+
+		vi.spyOn(console, 'log').mockImplementation(() => {});
 
 		handler = new PluginHandler(configServiceMock, interactiveServiceMock);
 	});
@@ -93,14 +99,18 @@ describe('PluginHandler', () => {
 	});
 
 	it('should render successful message with formatted strings', () => {
-		handler.renderSuccessfullMessage();
+		handler.renderSuccessfullMessage('my-plugin');
 
 		const expectedMessage =
-			`WARN_BOLD[\nConfig was successfully reset.]\n\n` +
+			`WARN_BOLD[\nConfig my-plugin was successfully added.]` +
+			`\n\nPull the project LIME[peak pull my-plugin]\n\n` +
 			`Discover ACCENT_BOLD[https://example.com] to check the documentation\n`;
 
 		expect(console.log).toHaveBeenCalledWith(expectedMessage);
-		expect(warn.bold).toHaveBeenCalledWith('\nConfig was successfully reset.');
+		expect(warn.bold).toHaveBeenCalledWith(
+			'\nConfig my-plugin was successfully added.',
+		);
+		expect(lime).toHaveBeenCalledWith('peak pull my-plugin');
 		expect(accent.bold).toHaveBeenCalledWith(Website);
 	});
 
@@ -132,6 +142,7 @@ describe('PluginHandler', () => {
 		interactiveServiceMock.prompt
 			.mockResolvedValueOnce('prompted-key')
 			.mockResolvedValueOnce('https://github.com/prompted');
+		interactiveServiceMock.singleSelect.mockResolvedValueOnce(Framework.Node);
 
 		await handler.handle([], {} as any);
 
@@ -144,63 +155,77 @@ describe('PluginHandler', () => {
 			2,
 			'Enter the repo url',
 		);
-		expect(configServiceMock.setConfig).toHaveBeenCalled();
+		expect(configServiceMock.setConfig).toHaveBeenCalled(); // Reached the end successfully
 	});
 
-	it('handle should stop and render errors if DTO validation fails', async () => {
+	it('handle should log and return early if DTO validation fails', async () => {
 		const validationErrors = [{ constraints: { error: 'invalid dto' } }] as any;
 		vi.mocked(validate).mockResolvedValueOnce(validationErrors);
 
 		await handler.handle(['my-key', 'https://github.com/repo'], {} as any);
 
-		expect(mockSpinner.stop).toHaveBeenCalledWith(fail);
 		expect(LogOutput.LogValidationError).toHaveBeenCalledWith('invalid dto');
 		expect(configServiceMock.getConfig).not.toHaveBeenCalled();
+		expect(mockSpinner.start).not.toHaveBeenCalled(); // Spinner shouldn't start on early fail
 	});
 
-	it('handle should stop and log error if URL is not referenced to git', async () => {
-		await handler.handle(['my-key', 'https://invalid.com/repo'], {} as any);
-
-		expect(mockSpinner.stop).toHaveBeenCalledWith(fail);
-		expect(LogOutput.LogValidationError).toHaveBeenCalledWith(
-			'Url is not referenced to git.',
-		);
-		expect(configServiceMock.getConfig).not.toHaveBeenCalled();
-	});
-
-	it('handle should stop and log error if plugin with the key already exists', async () => {
+	it('handle should log error and return early if a plugin with the key already exists (case-insensitive)', async () => {
 		configServiceMock.getConfig.mockResolvedValueOnce({
-			projects: [{ key: 'existing-key', url: 'https://github.com/old' }],
+			projects: [{ key: 'eXiStInG-KeY', url: 'https://github.com/old' }],
 		});
 
-		await handler.handle(['EXISTING-KEY', 'https://github.com/new'], {} as any);
+		await handler.handle(['ExIsTiNg-kEy', 'https://github.com/new'], {} as any);
 
-		expect(mockSpinner.stop).toHaveBeenCalledWith(fail);
 		expect(LogOutput.LogError).toHaveBeenCalledWith(
 			'Plugin with this key already exist',
 		);
-		expect(configServiceMock.setConfig).not.toHaveBeenCalled();
+		expect(interactiveServiceMock.singleSelect).not.toHaveBeenCalled();
+		expect(mockSpinner.start).not.toHaveBeenCalled();
 	});
 
-	it('handle should successfully update config and stop spinner on valid input', async () => {
+	it('handle should log error and return early if URL is not referenced to git', async () => {
+		await handler.handle(['my-key', 'https://invalid.com/repo'], {} as any);
+
+		expect(LogOutput.LogValidationError).toHaveBeenCalledWith(
+			'Url is not referenced to git.',
+		);
+		expect(interactiveServiceMock.singleSelect).not.toHaveBeenCalled();
+		expect(mockSpinner.start).not.toHaveBeenCalled();
+	});
+
+	it('handle should successfully update config with selected framework and stop spinner', async () => {
 		configServiceMock.getConfig.mockResolvedValueOnce({
 			projects: [{ key: 'old-key', url: 'https://github.com/old' }],
 		});
+		interactiveServiceMock.singleSelect.mockResolvedValueOnce(Framework.NET);
 
 		const envMock = {} as any;
 		await handler.handle(['new-key', 'https://github.com/new'], envMock);
 
-		expect(mockSpinner.start).toHaveBeenCalledWith('Validating');
-		expect(mockSpinner.message).toHaveBeenCalledWith('Updating config');
+		// Verify framework prompt
+		expect(interactiveServiceMock.singleSelect).toHaveBeenCalledWith({
+			message: 'Select framework',
+			options: [
+				{ label: '.NET', value: Framework.NET },
+				{ label: 'NodeJs', value: Framework.Node },
+			],
+		});
 
+		expect(mockSpinner.start).toHaveBeenCalledWith('Updating config');
+
+		// Verify config formatting and save
 		expect(configServiceMock.setConfig).toHaveBeenCalledWith({
 			projects: [
 				{ key: 'old-key', url: 'https://github.com/old' },
-				{ key: 'new-key', url: 'https://github.com/new' },
+				{
+					key: 'new-key',
+					url: 'https://github.com/new',
+					metadata: { framework: Framework.NET },
+				},
 			],
 		});
 
 		expect(mockSpinner.stop).toHaveBeenCalledWith('Success!');
-		expect(console.log).toHaveBeenCalled();
+		expect(console.log).toHaveBeenCalled(); // Triggered by renderSuccessfullMessage
 	});
 });
