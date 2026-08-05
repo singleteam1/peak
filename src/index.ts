@@ -11,6 +11,8 @@ async function bootstrap() {
 		dist: process.argv[1],
 	};
 
+	// Todo: add check to config availability in AppData
+
 	const core = new CommandAdapter(environment)
 		.addName('PEAK')
 		.addDescription(
