@@ -3,13 +3,15 @@ import { LogOutput } from 'common/utils';
 import { extractErrorMessage } from 'common/utils/error-check';
 import { CommandAdapter } from 'core/command.adapter';
 import type { ICommandEnvironments } from 'core/types/command.types';
-import { all_definitions } from 'modules'
+import { all_definitions } from 'modules';
 
 async function bootstrap() {
 	const environment: ICommandEnvironments = {
 		calledDir: process.cwd(),
 		dist: process.argv[1],
 	};
+
+	// Todo: add check to config availability in AppData
 
 	const core = new CommandAdapter(environment)
 		.addName('PEAK')

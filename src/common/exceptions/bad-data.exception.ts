@@ -1,7 +1,7 @@
 import { BaseException } from './base-exception';
 
 export class BadDataException extends BaseException {
-	private readonly value: string | null;
+	public readonly value: string | null;
 	constructor(message: string, value?: string) {
 		super(message);
 		this.value = value ?? null;

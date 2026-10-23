@@ -1,11 +1,10 @@
+import path from 'node:path';
 import envPaths from 'env-paths';
 import fs from 'fs-extra';
-import path from 'path';
 import type { ICache } from './cache.types';
 
 interface CacheEntry<T> {
 	value: T;
-	expiresAt: number | null;
 }
 
 export class DiskCache implements ICache {
@@ -27,24 +26,17 @@ export class DiskCache implements ICache {
 
 		try {
 			const entry: CacheEntry<T> = await fs.readJson(filePath);
-
-			if (entry.expiresAt && Date.now() > entry.expiresAt) {
-				await this.delete(key);
-				return null;
-			}
-
 			return entry.value;
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
 
-	public async set<T>(key: string, value: T, ttlMs?: number): Promise<void> {
+	public async set<T>(key: string, value: T): Promise<void> {
 		await fs.ensureDir(this.cacheDir);
 
 		const entry: CacheEntry<T> = {
 			value,
-			expiresAt: ttlMs ? Date.now() + ttlMs : null,
 		};
 		await fs.writeJson(this.getFilePath(key), entry);
 	}

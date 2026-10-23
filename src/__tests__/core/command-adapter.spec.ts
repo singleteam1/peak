@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: used inside tests */
 /** biome-ignore-all lint/correctness/noUnusedFunctionParameters: used inside tests */
-import { setupConsoleLogs } from '__tests__/setup';
+import { setupConsoleLogs } from '__tests__/setup/setup-logs';
 import { CommandAdapter } from 'core';
 import type {
 	ICommand,
@@ -46,7 +46,7 @@ describe('core/adapter', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		logSpy = vi.spyOn(console, 'log');
-		
+
 		environment = {
 			calledDir: 'path/to/caller-dir',
 			dist: 'path/to/dist',
@@ -80,7 +80,6 @@ describe('core/adapter', () => {
 	it('Should check version', async () => {
 		setProcessArgs(['-V']);
 
-		// Expect inside catch is used because commander throws errors.
 		try {
 			await adapter.parseArguments();
 		} catch (error: any) {

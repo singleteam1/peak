@@ -21,6 +21,6 @@ export async function defineLockfile(
 				pm: lockfile.packageManager,
 			};
 		}
-	} catch (error) {}
+	} catch (_error) {}
 	return null;
 }

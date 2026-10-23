@@ -1,7 +1,7 @@
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import type { IChangeLog } from 'common/models/change-log.model';
 import { LogOutput } from 'common/utils';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 
 export interface IReplacerService {
 	replaceInFile(changeLog: IChangeLog): Promise<void>;
@@ -37,7 +37,7 @@ export class ReplacerService implements IReplacerService {
 			if (!groupedChanges.has(resolvedPath)) {
 				groupedChanges.set(resolvedPath, []);
 			}
-			groupedChanges.get(resolvedPath)!.push(change);
+			groupedChanges.get(resolvedPath)?.push(change);
 		}
 
 		for (const [filePath, fileChanges] of groupedChanges.entries()) {
