@@ -10,7 +10,7 @@ export class ExportHandlerHandler implements ICommandHandler {
 		private readonly ps: IPowershellService,
 	) {}
 
-	public async handle(args: any[], env: ICommandEnvironments): Promise<void> {
+	public async handle(_args: any[], env: ICommandEnvironments): Promise<void> {
 		const loader = spinner();
 		loader.start('Exporting config');
 		const config = await this.configService.getConfig();

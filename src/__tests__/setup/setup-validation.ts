@@ -4,7 +4,7 @@ vi.mock('class-transformer', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('class-transformer')>();
 	return {
 		...actual,
-		plainToInstance: vi.fn((cls, obj) => obj),
+		plainToInstance: vi.fn((_cls, obj) => obj),
 	};
 });
 

@@ -1,6 +1,6 @@
+import path from 'node:path';
 import envPaths from 'env-paths';
 import fs from 'fs-extra';
-import path from 'path';
 import type { ICache } from './cache.types';
 
 interface CacheEntry<T> {
@@ -27,7 +27,7 @@ export class DiskCache implements ICache {
 		try {
 			const entry: CacheEntry<T> = await fs.readJson(filePath);
 			return entry.value;
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}

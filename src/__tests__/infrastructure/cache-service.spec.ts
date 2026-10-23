@@ -1,6 +1,6 @@
 import envPaths from 'env-paths';
 import fs from 'fs-extra';
-import { DiskCache, type IExplorerService } from 'infrastructure';
+import { DiskCache } from 'infrastructure';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the external dependencies
@@ -16,24 +16,12 @@ describe('DiskCache', () => {
 	const appName = 'test-app';
 	const mockCacheDir = '/mock/cache/path';
 	let cache: DiskCache;
-	let mockExplorer: IExplorerService;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.useFakeTimers();
 
 		(envPaths as any).mockReturnValue({ cache: mockCacheDir });
-
-		mockExplorer = {
-			createFolder: vi.fn(),
-			copyFile: vi.fn(),
-			exists: vi.fn(),
-			delete: vi.fn(),
-			createFile: vi.fn(),
-			readFile: vi.fn(),
-			rename: vi.fn(),
-			moveFile: vi.fn(),
-		};
 
 		cache = new DiskCache(appName);
 	});

@@ -1,10 +1,10 @@
+import { join } from 'node:path';
 import { spinner } from '@clack/prompts';
 import { validate } from 'class-validator';
 import { accent, lime, Website, warn } from 'common';
 import { LogOutput } from 'common/utils';
 import { getFileContent } from 'common/utils/read-file';
 import { ImportHandlerHandler } from 'modules/loader/handlers/import-config.handler';
-import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('common', () => ({

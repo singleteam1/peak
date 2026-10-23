@@ -12,7 +12,7 @@ import { LoaderRemovePluginDto } from '../dto/loader-key-arg.dto';
 export class RemovePluginHandler implements ICommandHandler {
 	public constructor(private readonly configService: IConfigService) {}
 
-	public async handle(args: any[], env: ICommandEnvironments): Promise<void> {
+	public async handle(args: any[], _env: ICommandEnvironments): Promise<void> {
 		const [key] = args;
 		const loader = spinner();
 		loader.start('Removing plugin from config');

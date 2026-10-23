@@ -19,7 +19,7 @@ export class ConfigService implements IConfigService {
 		try {
 			await this.cache.set(configKey, JSON.stringify(config));
 			return true;
-		} catch (error) {
+		} catch (_error) {
 			return false;
 		}
 	}

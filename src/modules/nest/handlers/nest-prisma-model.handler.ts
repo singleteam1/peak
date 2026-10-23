@@ -177,7 +177,7 @@ export class NestPrismaModelHandler implements ICommandHandler {
 				`nest g res ${dto.name} --no-spec`,
 				fullPathToModules,
 			);
-		} catch (error) {
+		} catch (_error) {
 			loader.stop(fail);
 			LogOutput.LogError('Cannot create a module');
 			return;
@@ -212,7 +212,7 @@ export class NestPrismaModelHandler implements ICommandHandler {
 				join(artifactFolderPath, endArchiveName),
 				artifactFolderPath,
 			);
-		} catch (error) {
+		} catch (_error) {
 			throw new Error('Failed to extract the artifact');
 		}
 
@@ -320,7 +320,7 @@ export class NestPrismaModelHandler implements ICommandHandler {
 			if (prismaBuffer) {
 				await this.psm.appendToEnd(
 					join(callerDir, 'prisma', 'schema.prisma'),
-					'\n\n' + prismaBuffer,
+					`\n\n${prismaBuffer}`,
 				);
 				await this.explorer.delete(join(pathToArtifactFolder, 'prisma.schema'));
 			}
@@ -344,7 +344,7 @@ export class NestPrismaModelHandler implements ICommandHandler {
 				pathToArtifactFolder,
 				join(fullPathToModules, modelName),
 			);
-		} catch (error) {
+		} catch (_error) {
 			throw new Error('Unable to merge changes');
 		}
 	}

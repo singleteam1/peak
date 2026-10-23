@@ -1,6 +1,6 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { createExtractorFromFile } from 'node-unrar-js';
-import * as path from 'path';
 
 export interface IUnzipper {
 	extract(archivePath: string, destinationPath: string): Promise<void>;
@@ -29,7 +29,7 @@ export class Unzipper implements IUnzipper {
 
 			const extractedFiles = extractor.extract();
 
-			for (const file of extractedFiles.files) {
+			for (const _file of extractedFiles.files) {
 			}
 		} catch (error: any) {
 			throw new Error(`Extraction error: ${error.message}`);

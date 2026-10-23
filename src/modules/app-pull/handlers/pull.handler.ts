@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/correctness/noSwitchDeclarations: <explanation> */
+import { join } from 'node:path';
 import { note, spinner } from '@clack/prompts';
 import chalk from 'chalk';
 import { plainToInstance } from 'class-transformer';
@@ -11,7 +11,6 @@ import { Framework } from 'data/config';
 import type { IPowershellService } from 'infrastructure';
 import type { IConfigService } from 'infrastructure/configService/config.service';
 import type { IInteractiveService } from 'infrastructure/interactive';
-import { join } from 'path';
 import { AppNameDto, AppPullKeyDto } from '../dto/app-pull.dto';
 
 export class PullHandler implements ICommandHandler {

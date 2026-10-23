@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs } from 'node:fs';
 import type { CommandResult } from 'infrastructure/powershell';
 
 export async function getFileContent(filePath: string): Promise<CommandResult> {

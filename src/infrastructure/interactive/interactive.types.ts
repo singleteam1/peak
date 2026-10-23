@@ -2,7 +2,7 @@ export type TInputTextProps = {
 	message: string;
 	placeholder: string;
 	initValue?: string;
-	validate?: (v: string) => string | void;
+	validate?: (v: string) => string | undefined;
 };
 
 export type TSingleSelectOptionProps<TVal> = {

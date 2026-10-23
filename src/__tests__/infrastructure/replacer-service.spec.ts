@@ -1,5 +1,4 @@
 import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
 import { LogOutput } from 'common/utils';
 import {
 	type IReplacerService,

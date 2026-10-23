@@ -1,10 +1,10 @@
+import { join } from 'node:path';
 import { note, spinner } from '@clack/prompts';
 import chalk from 'chalk';
 import { validate } from 'class-validator';
 import { LogOutput } from 'common/utils';
 import { Framework } from 'data/config';
 import { PullHandler } from 'modules/app-pull/handlers/pull.handler';
-import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('chalk', () => ({

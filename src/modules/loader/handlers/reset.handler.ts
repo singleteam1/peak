@@ -12,7 +12,7 @@ export class ResetHandler implements ICommandHandler {
 		private readonly interactive: IInteractiveService,
 	) {}
 
-	public async handle(args: any[], env: ICommandEnvironments): Promise<void> {
+	public async handle(_args: any[], _env: ICommandEnvironments): Promise<void> {
 		const action = await this.interactive.confirmAction(
 			'Are you sure you want to reset the config?',
 			false,

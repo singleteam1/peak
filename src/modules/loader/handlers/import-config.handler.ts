@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { spinner } from '@clack/prompts';
 import { plainToInstance } from 'class-transformer';
 import { type ValidationError, validate } from 'class-validator';
@@ -8,7 +9,6 @@ import type { ICommandEnvironments, ICommandHandler } from 'core/types';
 import type { IConfig } from 'data/config';
 import type { IExplorerService, IInteractiveService } from 'infrastructure';
 import type { IConfigService } from 'infrastructure/configService/config.service';
-import { join } from 'path';
 import { LoaderConfigNameDto } from '../dto/loader-key-arg.dto';
 
 export class ImportHandlerHandler implements ICommandHandler {
@@ -71,7 +71,7 @@ export class ImportHandlerHandler implements ICommandHandler {
 
 			loader.stop('Success!');
 			this.renderSuccessfullMessage();
-		} catch (error) {
+		} catch (_error) {
 			loader.stop('Failed');
 			LogOutput.LogError(
 				'Failed to parse config file. Ensure it is valid JSON.',

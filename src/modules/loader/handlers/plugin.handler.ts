@@ -16,7 +16,7 @@ export class PluginHandler implements ICommandHandler {
 		private readonly interactive: IInteractiveService,
 	) {}
 
-	public async handle(args: any[], env: ICommandEnvironments): Promise<void> {
+	public async handle(args: any[], _env: ICommandEnvironments): Promise<void> {
 		let [key, url] = args;
 
 		if (!key) {
